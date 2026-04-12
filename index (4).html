@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ParkaLot Smart System</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI';}
+
+body{
+background:linear-gradient(135deg,#e8f5e9,#c8f7dc);
+min-height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+}
+
+.container{
+width:95%;
+height:95vh;
+background:white;
+border-radius:20px;
+display:flex;
+overflow:hidden;
+box-shadow:0 20px 50px rgba(0,0,0,0.2);
+}
+
+.left{
+flex:1;
+padding:40px;
+overflow-y:auto;
+}
+
+.right{
+width:350px;
+background:#2e7d32;
+color:white;
+padding:30px;
+}
+
+h1{color:#2e7d32;margin-bottom:10px;}
+
+.step{display:none;}
+.active{display:block;}
+
+input,select{
+width:100%;
+padding:12px;
+margin:8px 0;
+border-radius:10px;
+border:1px solid #ccc;
+}
+
+button{
+width:100%;
+padding:12px;
+margin-top:10px;
+border:none;
+border-radius:10px;
+background:#2e7d32;
+color:white;
+cursor:pointer;
+}
+
+button:hover{background:#1b5e20;}
+
+.card{
+background:rgba(255,255,255,0.2);
+padding:15px;
+border-radius:10px;
+margin-bottom:10px;
+cursor:pointer;
+}
+
+.selected{
+background:#a5d6a7;
+color:black;
+}
+
+.previewBox{
+background:#e8f5e9;
+padding:15px;
+border-radius:10px;
+margin-top:15px;
+}
+
+.summary p{margin:8px 0;}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="left">
+
+<h1>ParkaLot Reservation</h1>
+
+<!-- STEP 1 -->
+<div class="step active" id="step1">
+<h3>1. Check Availability</h3>
+
+<input type="date" id="date">
+<input type="time" id="arrival">
+<input type="time" id="departure">
+
+<select id="vehicleType">
+<option value="">Vehicle Type</option>
+<option>Sedan</option>
+<option>SUV</option>
+</select>
+
+<button onclick="showAvailability()">Check Availability</button>
+</div>
+
+<!-- STEP 2 -->
+<div class="step" id="step2">
+<h3>2. Available Parking</h3>
+<div id="availabilityList"></div>
+
+<button onclick="nextStep(3)">Continue</button>
+</div>
+
+<!-- STEP 3 -->
+<div class="step" id="step3">
+<h3>3. Select Contract</h3>
+
+<div class="card" onclick="selectPlan(this,'Hourly - ₹50/hr')">Hourly - ₹50/hr</div>
+<div class="card" onclick="selectPlan(this,'Daily - ₹300/day')">Daily - ₹300/day</div>
+<div class="card" onclick="selectPlan(this,'Monthly - ₹5000/month')">Monthly - ₹5000/month</div>
+
+<button onclick="goToForm()">Select Contract to Proceed</button>
+</div>
+
+<!-- STEP 4 -->
+<div class="step" id="step4">
+<h3>4. Reservation Form</h3>
+
+<input type="text" id="name" placeholder="Full Name">
+<input type="email" id="email" placeholder="Email">
+<input type="text" id="phone" placeholder="Phone">
+<input type="text" id="vehicleNumber" placeholder="Vehicle Number">
+
+<select id="payment">
+<option>Payment Method</option>
+<option>Card</option>
+<option>UPI</option>
+</select>
+
+<button onclick="preview()">Preview Reservation</button>
+
+<div id="previewBox" class="previewBox" style="display:none;"></div>
+
+<button onclick="confirmBooking()">Confirm Booking</button>
+</div>
+
+<!-- STEP 5 -->
+<div class="step" id="step5">
+<h3>✅ Booking Confirmed</h3>
+<p>Your parking has been successfully reserved.</p>
+</div>
+
+</div>
+
+<!-- RIGHT PANEL -->
+<div class="right">
+<h3>Summary</h3>
+<div class="summary">
+<p id="sDate">Date: -</p>
+<p id="sTime">Time: -</p>
+<p id="sType">Vehicle: -</p>
+<p id="sPlan">Plan: -</p>
+</div>
+</div>
+
+</div>
+
+<script>
+
+let selectedPlan="";
+
+// Step navigation
+function nextStep(step){
+document.querySelectorAll('.step').forEach(s=>s.classList.remove('active'));
+document.getElementById("step"+step).classList.add('active');
+}
+
+// Step 1 → 2
+function showAvailability(){
+let list=document.getElementById("availabilityList");
+list.innerHTML="";
+
+for(let i=1;i<=3;i++){
+list.innerHTML+=`<div class="card">Section ${i} - ${Math.floor(Math.random()*5+1)} spots available</div>`;
+}
+
+updateSummary();
+nextStep(2);
+}
+
+// Select contract
+function selectPlan(el,plan){
+document.querySelectorAll('.card').forEach(c=>c.classList.remove('selected'));
+el.classList.add('selected');
+selectedPlan=plan;
+document.getElementById("sPlan").innerText="Plan: "+plan;
+}
+
+// Must select contract
+function goToForm(){
+if(!selectedPlan){
+alert("Please select a contract first!");
+return;
+}
+nextStep(4);
+}
+
+// PREVIEW (FIXED)
+function preview(){
+const name=document.getElementById("name").value;
+const email=document.getElementById("email").value;
+const phone=document.getElementById("phone").value;
+const vehicle=document.getElementById("vehicleNumber").value;
+const payment=document.getElementById("payment").value;
+
+if(!name||!email||!phone||!vehicle){
+alert("Fill all details");
+return;
+}
+
+let box=document.getElementById("previewBox");
+box.style.display="block";
+
+box.innerHTML=`
+<b>Preview:</b><br><br>
+Name: ${name}<br>
+Email: ${email}<br>
+Phone: ${phone}<br>
+Vehicle: ${vehicle}<br>
+Plan: ${selectedPlan}<br>
+Payment: ${payment}
+`;
+}
+
+// Final confirm
+function confirmBooking(){
+nextStep(5);
+}
+
+// Summary update
+function updateSummary(){
+const d=document.getElementById("date").value;
+const a=document.getElementById("arrival").value;
+const dep=document.getElementById("departure").value;
+const t=document.getElementById("vehicleType").value;
+
+document.getElementById("sDate").innerText="Date: "+d;
+document.getElementById("sTime").innerText="Time: "+a+" - "+dep;
+document.getElementById("sType").innerText="Vehicle: "+t;
+}
+
+</script>
+
+</body>
+</html>
