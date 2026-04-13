@@ -1,0 +1,489 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ParkaLot Registration</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      background: #f3f5f7;
+      padding: 30px 15px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      width: 720px;
+      max-width: 100%;
+    }
+
+    .auth-box {
+      width: 220px;
+      border: 2px solid #222;
+      background: #fff;
+      margin-bottom: 20px;
+    }
+
+    .auth-box button {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-bottom: 1px solid #222;
+      background: #fff;
+      font-size: 18px;
+      cursor: pointer;
+    }
+
+    .auth-box button:last-child {
+      border-bottom: none;
+    }
+
+    .auth-box button.active {
+      background: #28a745;
+      color: #fff;
+      font-weight: bold;
+    }
+
+    .main-box {
+      border: 2px solid #222;
+      background: #fff;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .main-header {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border-bottom: 2px solid #222;
+      padding-bottom: 12px;
+      margin-bottom: 20px;
+      gap: 15px;
+    }
+
+    .brand-title {
+      font-size: 28px;
+      font-weight: bold;
+    }
+
+    .form-section {
+      display: none;
+    }
+
+    .form-section.active {
+      display: block;
+    }
+
+    h2 {
+      font-size: 30px;
+      margin-bottom: 15px;
+    }
+
+    .details-box {
+      border: 2px solid #222;
+      padding: 15px;
+      margin-bottom: 18px;
+    }
+
+    label {
+      display: block;
+      font-weight: bold;
+      margin-top: 10px;
+      margin-bottom: 6px;
+      font-size: 16px;
+    }
+
+    input,
+    select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #444;
+      font-size: 15px;
+      background: #fff;
+    }
+
+    .vehicle-row {
+      display: flex;
+      gap: 10px;
+      align-items: stretch;
+      margin-top: 8px;
+    }
+
+    .vehicle-row input {
+      flex: 1;
+    }
+
+    .counter-box {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      width: 50px;
+    }
+
+    .counter-box button {
+      flex: 1;
+      border: 1px solid #222;
+      background: #e9ecef;
+      font-size: 18px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .password-box {
+      margin-top: 14px;
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .btn-row button,
+    .single-btn {
+      flex: 1;
+      padding: 12px;
+      border: 1px solid #222;
+      background: #28a745;
+      color: #fff;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .btn-row button:hover,
+    .single-btn:hover {
+      background: #218838;
+    }
+
+    .single-btn {
+      width: 100%;
+      margin-top: 16px;
+    }
+
+    .message {
+      margin-top: 14px;
+      text-align: center;
+      font-weight: bold;
+      min-height: 24px;
+    }
+
+    .success {
+      color: #28a745;
+    }
+
+    .error {
+      color: #c82333;
+    }
+
+    .result-box {
+      border: 2px solid #222;
+      background: #fff;
+      min-height: 220px;
+      padding: 22px;
+      font-size: 22px;
+      line-height: 1.9;
+      display: none;
+    }
+
+    .result-box.available {
+      display: block;
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .result-box.not-available {
+      display: block;
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    .placeholder {
+      border: 2px solid #222;
+      background: #fff;
+      min-height: 220px;
+      padding: 22px;
+      font-size: 20px;
+      color: #777;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    @media (max-width: 700px) {
+      .main-header {
+        flex-direction: column;
+      }
+
+      .auth-box {
+        width: 100%;
+      }
+
+      .vehicle-row {
+        flex-direction: column;
+      }
+
+      .counter-box {
+        width: 100%;
+        flex-direction: row;
+      }
+
+      .btn-row {
+        flex-direction: column;
+      }
+
+      .brand-title {
+        font-size: 24px;
+      }
+
+      h2 {
+        font-size: 26px;
+      }
+
+      .result-box,
+      .placeholder {
+        font-size: 18px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <div class="auth-box">
+      <button id="loginTab" onclick="showLogin()">Log in</button>
+      <button id="registerTab" class="active" onclick="showRegister()">Register</button>
+    </div>
+
+    <div class="main-box">
+      <div class="main-header">
+        <div class="brand-title">ParkaLot</div>
+      </div>
+
+      <div id="registerSection" class="form-section active">
+        <h2>Registration</h2>
+
+        <div class="details-box">
+          <label for="fullName">Full Name</label>
+          <input type="text" id="fullName" placeholder="Enter full name" />
+
+          <label for="email">Email</label>
+          <input type="email" id="email" placeholder="Enter email" />
+
+          <label for="phone">Phone Number</label>
+          <input type="text" id="phone" placeholder="Enter phone number" />
+
+          <label for="vehicleNumber">Vehicle Number</label>
+          <input type="text" id="vehicleNumber" placeholder="Enter vehicle number" />
+
+          <label for="vehicleType">Vehicle Type</label>
+          <select id="vehicleType">
+            <option value="">Select vehicle type</option>
+            <option value="Sedan">Sedan</option>
+            <option value="SUV">SUV</option>
+            <option value="Bike">Bike</option>
+            <option value="Truck">Truck</option>
+          </select>
+
+          <label for="date">Date</label>
+          <input type="date" id="date" />
+        </div>
+
+        <label for="noOfVehicles">How many vehicles to register</label>
+        <div class="vehicle-row">
+          <input type="number" id="noOfVehicles" min="1" value="1" />
+          <div class="counter-box">
+            <button type="button" onclick="increaseVehicles()">▲</button>
+            <button type="button" onclick="decreaseVehicles()">▼</button>
+          </div>
+        </div>
+
+        <div class="password-box">
+          <label for="registerPassword">Create Password</label>
+          <input type="password" id="registerPassword" placeholder="Create password" />
+        </div>
+
+        <div class="btn-row">
+          <button type="button" onclick="registerUser()">Register</button>
+          <button type="button" onclick="checkAvailability()">Check Availability</button>
+        </div>
+
+        <div id="registerMsg" class="message"></div>
+      </div>
+
+      <div id="loginSection" class="form-section">
+        <h2>Login</h2>
+
+        <div class="details-box">
+          <label for="loginEmail">Email</label>
+          <input type="text" id="loginEmail" placeholder="Enter email" />
+
+          <label for="loginPassword">Password</label>
+          <input type="password" id="loginPassword" placeholder="Enter password" />
+
+          <button type="button" class="single-btn" onclick="loginUser()">Login</button>
+        </div>
+
+        <div id="loginMsg" class="message"></div>
+      </div>
+    </div>
+
+    <div id="placeholderBox" class="placeholder">
+      Fill the registration details and click <b>&nbsp;Check Availability&nbsp;</b>
+    </div>
+
+    <div id="resultBox" class="result-box"></div>
+
+  </div>
+
+  <script>
+    function showLogin() {
+      document.getElementById("loginSection").classList.add("active");
+      document.getElementById("registerSection").classList.remove("active");
+      document.getElementById("loginTab").classList.add("active");
+      document.getElementById("registerTab").classList.remove("active");
+    }
+
+    function showRegister() {
+      document.getElementById("registerSection").classList.add("active");
+      document.getElementById("loginSection").classList.remove("active");
+      document.getElementById("registerTab").classList.add("active");
+      document.getElementById("loginTab").classList.remove("active");
+    }
+
+    function increaseVehicles() {
+      const input = document.getElementById("noOfVehicles");
+      let current = parseInt(input.value) || 1;
+      input.value = current + 1;
+    }
+
+    function decreaseVehicles() {
+      const input = document.getElementById("noOfVehicles");
+      let current = parseInt(input.value) || 1;
+      if (current > 1) {
+        input.value = current - 1;
+      }
+    }
+
+    function registerUser() {
+      const fullName = document.getElementById("fullName").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const phone = document.getElementById("phone").value.trim();
+      const vehicleNumber = document.getElementById("vehicleNumber").value.trim();
+      const vehicleType = document.getElementById("vehicleType").value;
+      const date = document.getElementById("date").value;
+      const noOfVehicles = document.getElementById("noOfVehicles").value.trim();
+      const password = document.getElementById("registerPassword").value.trim();
+      const registerMsg = document.getElementById("registerMsg");
+
+      if (!fullName || !email || !phone || !vehicleNumber || !vehicleType || !date || !noOfVehicles || !password) {
+        registerMsg.className = "message error";
+        registerMsg.textContent = "Please fill all registration details.";
+        return;
+      }
+
+      const userData = {
+        fullName: fullName,
+        email: email,
+        phone: phone,
+        vehicleNumber: vehicleNumber,
+        vehicleType: vehicleType,
+        date: date,
+        noOfVehicles: noOfVehicles,
+        password: password
+      };
+
+      localStorage.setItem("parkalotUser", JSON.stringify(userData));
+
+      registerMsg.className = "message success";
+      registerMsg.textContent = "Registration successful.";
+
+      setTimeout(() => {
+        showLogin();
+      }, 800);
+    }
+
+    function loginUser() {
+      const loginEmail = document.getElementById("loginEmail").value.trim();
+      const loginPassword = document.getElementById("loginPassword").value.trim();
+      const loginMsg = document.getElementById("loginMsg");
+      const savedUser = JSON.parse(localStorage.getItem("parkalotUser"));
+
+      if (!loginEmail || !loginPassword) {
+        loginMsg.className = "message error";
+        loginMsg.textContent = "Please enter email and password.";
+        return;
+      }
+
+      if (!savedUser) {
+        loginMsg.className = "message error";
+        loginMsg.textContent = "No registered user found.";
+        return;
+      }
+
+      if (loginEmail === savedUser.email && loginPassword === savedUser.password) {
+        loginMsg.className = "message success";
+        loginMsg.textContent = "Login successful.";
+
+        setTimeout(() => {
+          window.location.href = "dashboard.html";
+        }, 1000);
+      } else {
+        loginMsg.className = "message error";
+        loginMsg.textContent = "Invalid email or password.";
+      }
+    }
+
+    function checkAvailability() {
+      const vehicleNumber = document.getElementById("vehicleNumber").value.trim();
+      const vehicleType = document.getElementById("vehicleType").value;
+      const date = document.getElementById("date").value;
+      const noOfVehiclesValue = document.getElementById("noOfVehicles").value.trim();
+      const resultBox = document.getElementById("resultBox");
+      const placeholderBox = document.getElementById("placeholderBox");
+
+      if (!vehicleNumber || !vehicleType || !date || !noOfVehiclesValue) {
+        alert("Please fill required details first.");
+        return;
+      }
+
+      const noOfVehicles = parseInt(noOfVehiclesValue);
+
+      if (isNaN(noOfVehicles) || noOfVehicles <= 0) {
+        alert("Enter a valid number of vehicles.");
+        return;
+      }
+
+      const availableSlots = 5;
+
+      placeholderBox.style.display = "none";
+
+      if (noOfVehicles <= availableSlots) {
+        resultBox.className = "result-box available";
+        resultBox.innerHTML = `
+          <strong>No. of Vehicles:</strong> ${noOfVehicles}<br>
+          <strong>Date is:</strong> available<br>
+          <strong>Details of Vehicle:</strong> ${vehicleNumber} (${vehicleType})
+        `;
+      } else {
+        resultBox.className = "result-box not-available";
+        resultBox.innerHTML = `
+          <strong>No. of Vehicles:</strong> ${noOfVehicles}<br>
+          <strong>Date is:</strong> not available<br>
+          <strong>Details of Vehicle:</strong> ${vehicleNumber} (${vehicleType})
+        `;
+      }
+    }
+  </script>
+</body>
+</html>
