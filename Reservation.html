@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ParkaLot - Smart Reservation</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Segoe UI',sans-serif;
+}
+
+body{
+    background:linear-gradient(135deg,#e6f4ea,#c8f7dc);
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+.wrapper{
+    width:95%;
+    height:92vh;
+    background:white;
+    border-radius:20px;
+    box-shadow:0 20px 50px rgba(0,0,0,0.15);
+    display:grid;
+    grid-template-columns:1.2fr 1fr;
+    overflow:hidden;
+}
+
+/* LEFT */
+.left{
+    padding:40px;
+    background:#f9fffb;
+}
+
+h1{
+    color:#2e7d32;
+}
+
+.subtitle{
+    margin-bottom:20px;
+    color:#555;
+}
+
+label{
+    font-weight:600;
+    margin-top:10px;
+    display:block;
+}
+
+input,select{
+    width:100%;
+    padding:12px;
+    margin-top:5px;
+    border-radius:10px;
+    border:1px solid #ccc;
+    margin-bottom:10px;
+}
+
+button{
+    width:100%;
+    padding:14px;
+    margin-top:10px;
+    border:none;
+    border-radius:10px;
+    background:#2e7d32;
+    color:white;
+    font-size:16px;
+    cursor:pointer;
+}
+
+button:hover{
+    background:#1b5e20;
+}
+
+.preview,.result{
+    margin-top:15px;
+    padding:12px;
+    border-radius:10px;
+    display:none;
+}
+
+.preview{
+    background:#e8f5e9;
+    color:#2e7d32;
+}
+
+.available{
+    background:#c8e6c9;
+    color:#1b5e20;
+}
+
+.not-available{
+    background:#ffcdd2;
+    color:#b71c1c;
+}
+
+/* RIGHT */
+.right{
+    padding:40px;
+    background:linear-gradient(135deg,#2e7d32,#66bb6a);
+    color:white;
+}
+
+.card{
+    background:rgba(255,255,255,0.2);
+    padding:20px;
+    border-radius:15px;
+    margin-bottom:20px;
+}
+
+.card h3{
+    margin-bottom:10px;
+}
+
+.summary p{
+    margin:8px 0;
+}
+
+/* MOBILE */
+@media(max-width:900px){
+    .wrapper{
+        grid-template-columns:1fr;
+        height:auto;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="wrapper">
+
+<!-- LEFT -->
+<div class="left">
+<h1>ParkaLot System</h1>
+<p class="subtitle">Smart Parking Reservation</p>
+
+<label>Date</label>
+<input type="date" id="date">
+
+<label>No. of Vehicles</label>
+<input type="number" id="vehicles">
+
+<label>Vehicle Number</label>
+<input type="text" id="vehicleNumber">
+
+<label>Arrival Time</label>
+<input type="time" id="arrival">
+
+<label>Departure Time</label>
+<input type="time" id="departure">
+
+<label>Vehicle Type</label>
+<select id="type">
+<option value="">Select</option>
+<option>Sedan</option>
+<option>SUV</option>
+</select>
+
+<button onclick="previewBooking()">Preview Reservation</button>
+<button onclick="confirmBooking()">Confirm Booking</button>
+
+<div id="previewBox" class="preview"></div>
+<div id="resultBox" class="result"></div>
+</div>
+
+<!-- RIGHT PANEL -->
+<div class="right">
+
+<div class="card">
+<h3>Parking Status</h3>
+<p>Total Spaces: 100</p>
+<p id="availableSpaces">Available: 20</p>
+</div>
+
+<div class="card summary">
+<h3>Reservation Summary</h3>
+<p id="sumVehicle">Vehicle: -</p>
+<p id="sumTime">Time: -</p>
+<p id="sumType">Type: -</p>
+</div>
+
+</div>
+
+</div>
+
+<script>
+let availableSpaces = 20;
+
+function previewBooking(){
+    const v=document.getElementById("vehicles").value;
+    const num=document.getElementById("vehicleNumber").value;
+    const a=document.getElementById("arrival").value;
+    const d=document.getElementById("departure").value;
+    const t=document.getElementById("type").value;
+
+    if(!v||!num||!a||!d||!t){
+        alert("Fill all fields");
+        return;
+    }
+
+    document.getElementById("previewBox").style.display="block";
+    document.getElementById("previewBox").innerHTML=
+    `Preview:<br>
+    Vehicle: ${num}<br>
+    Time: ${a} - ${d}<br>
+    Type: ${t}<br>
+    Slots: ${v}`;
+}
+
+function confirmBooking(){
+    const v=document.getElementById("vehicles").value;
+    const num=document.getElementById("vehicleNumber").value;
+    const a=document.getElementById("arrival").value;
+    const d=document.getElementById("departure").value;
+    const t=document.getElementById("type").value;
+
+    let result=document.getElementById("resultBox");
+
+    if(v<=availableSpaces){
+        result.style.display="block";
+        result.className="result available";
+        result.innerHTML="✅ Parking Available";
+        availableSpaces-=v;
+    }else{
+        result.style.display="block";
+        result.className="result not-available";
+        result.innerHTML="❌ Parking Not Available";
+    }
+
+    document.getElementById("availableSpaces").innerText="Available: "+availableSpaces;
+
+    document.getElementById("sumVehicle").innerText="Vehicle: "+num;
+    document.getElementById("sumTime").innerText="Time: "+a+" - "+d;
+    document.getElementById("sumType").innerText="Type: "+t;
+}
+</script>
+<script>
+const user = localStorage.getItem("parkalotUser");
+
+if (!user) {
+  window.location.href = "login.html";
+}
+</script>
+</body>
+</html>
