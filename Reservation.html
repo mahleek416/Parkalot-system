@@ -2,251 +2,527 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>ParkaLot - Smart Reservation</title>
+<title>ParkaLot Smart System</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:'Segoe UI',sans-serif;
-}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif;}
 
 body{
-    background:linear-gradient(135deg,#e6f4ea,#c8f7dc);
-    min-height:100vh;
-    display:flex;
-    align-items:center;
-    justify-content:center;
+  background:linear-gradient(135deg,#e8f5e9,#c8f7dc);
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
 }
 
-.wrapper{
-    width:95%;
-    height:92vh;
-    background:white;
-    border-radius:20px;
-    box-shadow:0 20px 50px rgba(0,0,0,0.15);
-    display:grid;
-    grid-template-columns:1.2fr 1fr;
-    overflow:hidden;
+.container{
+  width:95%;
+  height:95vh;
+  background:white;
+  border-radius:20px;
+  display:flex;
+  overflow:hidden;
+  box-shadow:0 20px 50px rgba(0,0,0,0.2);
 }
 
-/* LEFT */
 .left{
-    padding:40px;
-    background:#f9fffb;
+  flex:1;
+  padding:40px;
+  overflow-y:auto;
+}
+
+.right{
+  width:350px;
+  background:#2e7d32;
+  color:white;
+  padding:30px;
 }
 
 h1{
-    color:#2e7d32;
+  color:#2e7d32;
+  margin-bottom:10px;
 }
 
-.subtitle{
-    margin-bottom:20px;
-    color:#555;
-}
-
-label{
-    font-weight:600;
-    margin-top:10px;
-    display:block;
-}
+.step{display:none;}
+.step.active{display:block;}
 
 input,select{
-    width:100%;
-    padding:12px;
-    margin-top:5px;
-    border-radius:10px;
-    border:1px solid #ccc;
-    margin-bottom:10px;
+  width:100%;
+  padding:12px;
+  margin:8px 0;
+  border-radius:10px;
+  border:1px solid #ccc;
 }
 
 button{
-    width:100%;
-    padding:14px;
-    margin-top:10px;
-    border:none;
-    border-radius:10px;
-    background:#2e7d32;
-    color:white;
-    font-size:16px;
-    cursor:pointer;
+  padding:12px;
+  margin-top:10px;
+  border:none;
+  border-radius:10px;
+  background:#2e7d32;
+  color:white;
+  cursor:pointer;
+  font-size:16px;
+  font-weight:600;
 }
 
-button:hover{
-    background:#1b5e20;
+.full-btn{
+  width:100%;
 }
 
-.preview,.result{
-    margin-top:15px;
-    padding:12px;
-    border-radius:10px;
-    display:none;
-}
-
-.preview{
-    background:#e8f5e9;
-    color:#2e7d32;
-}
-
-.available{
-    background:#c8e6c9;
-    color:#1b5e20;
-}
-
-.not-available{
-    background:#ffcdd2;
-    color:#b71c1c;
-}
-
-/* RIGHT */
-.right{
-    padding:40px;
-    background:linear-gradient(135deg,#2e7d32,#66bb6a);
-    color:white;
-}
+button:hover{background:#1b5e20;}
 
 .card{
-    background:rgba(255,255,255,0.2);
-    padding:20px;
-    border-radius:15px;
-    margin-bottom:20px;
+  background:rgba(255,255,255,0.2);
+  padding:15px;
+  border-radius:10px;
+  margin-bottom:10px;
+  cursor:pointer;
 }
 
-.card h3{
-    margin-bottom:10px;
+.selected{
+  background:#a5d6a7;
+  color:black;
 }
 
-.summary p{
-    margin:8px 0;
+.summary p{margin:8px 0;}
+
+.info-box{
+  background:#f1f8f4;
+  border:1px solid #c8e6c9;
+  border-radius:10px;
+  padding:18px;
+  margin-top:15px;
+  line-height:1.9;
 }
 
-/* MOBILE */
+.note-box{
+  margin-top:15px;
+  background:#fff8e1;
+  border:1px solid #f0c36d;
+  color:#7a5a00;
+  padding:15px;
+  border-radius:10px;
+  line-height:1.6;
+}
+
+.confirm-box{
+  background:#e8f5e9;
+  padding:20px;
+  border-radius:12px;
+  margin-top:15px;
+  line-height:1.9;
+}
+
+.final-navbar{
+  display:none;
+  justify-content:space-between;
+  align-items:center;
+  padding:18px 28px;
+  background:white;
+  box-shadow:0 2px 10px rgba(0,0,0,0.05);
+  border-radius:14px;
+  margin-bottom:25px;
+}
+
+.final-navbar.active{
+  display:flex;
+}
+
+.final-logo{
+  font-size:24px;
+  font-weight:800;
+  color:#2e7d32;
+}
+
+.final-nav-links{
+  display:flex;
+  gap:30px;
+}
+
+.final-nav-links a{
+  text-decoration:none;
+  color:#555;
+  font-weight:600;
+}
+
+.final-logout{
+  background:#2e7d32;
+  color:white;
+  border:none;
+  padding:10px 18px;
+  border-radius:25px;
+  cursor:pointer;
+  font-weight:600;
+}
+
+.final-page{
+  max-width:900px;
+}
+
+.success-title{
+  font-size:18px;
+  font-weight:700;
+  margin-bottom:10px;
+}
+
+.final-actions{
+  display:flex;
+  gap:15px;
+  margin-top:20px;
+  flex-wrap:wrap;
+}
+
+.final-actions button{
+  flex:1;
+  min-width:220px;
+}
+
+.secondary-btn{
+  background:#f1f5f2;
+  color:#2e7d32;
+  border:2px solid #2e7d32;
+}
+
+.secondary-btn:hover{
+  background:#dff0e2;
+}
+
 @media(max-width:900px){
-    .wrapper{
-        grid-template-columns:1fr;
-        height:auto;
-    }
+  .container{
+    flex-direction:column;
+    height:auto;
+  }
+
+  .right{
+    width:100%;
+  }
+
+  .final-navbar{
+    flex-direction:column;
+    gap:15px;
+    align-items:flex-start;
+  }
+
+  .final-nav-links{
+    flex-wrap:wrap;
+    gap:15px;
+  }
 }
 </style>
 </head>
 
 <body>
 
-<div class="wrapper">
+<div class="container">
 
-<!-- LEFT -->
-<div class="left">
-<h1>ParkaLot System</h1>
-<p class="subtitle">Smart Parking Reservation</p>
+  <div class="left">
 
-<label>Date</label>
-<input type="date" id="date">
+    <!-- FINAL PAGE NAVBAR -->
+    <div id="finalNavbar" class="final-navbar">
+      <div class="final-logo">PARKALOT</div>
 
-<label>No. of Vehicles</label>
-<input type="number" id="vehicles">
+      <div class="final-nav-links">
+        <a href="dashboard.html">Garage</a>
+        <a href="Reservation.html">Reservation</a>
+        <a href="invoice.html">Billing</a>
+      </div>
 
-<label>Vehicle Number</label>
-<input type="text" id="vehicleNumber">
+      <button class="final-logout" onclick="logout()">Logout</button>
+    </div>
 
-<label>Arrival Time</label>
-<input type="time" id="arrival">
+    <h1 id="mainHeading">ParkaLot Reservation</h1>
 
-<label>Departure Time</label>
-<input type="time" id="departure">
+    <!-- STEP 1 -->
+    <div class="step active" id="step1">
+      <h3>1. Check Availability</h3>
 
-<label>Vehicle Type</label>
-<select id="type">
-<option value="">Select</option>
-<option>Sedan</option>
-<option>SUV</option>
-</select>
+      <input type="date" id="date">
+      <input type="time" id="arrival">
+      <input type="time" id="departure">
 
-<button onclick="previewBooking()">Preview Reservation</button>
-<button onclick="confirmBooking()">Confirm Booking</button>
+      <select id="vehicleType">
+        <option value="">Vehicle Type</option>
+        <option>Sedan</option>
+        <option>SUV</option>
+        <option>Bike</option>
+        <option>Truck</option>
+      </select>
 
-<div id="previewBox" class="preview"></div>
-<div id="resultBox" class="result"></div>
-</div>
+      <button class="full-btn" onclick="showAvailability()">Check Availability</button>
+    </div>
 
-<!-- RIGHT PANEL -->
-<div class="right">
+    <!-- STEP 2 -->
+    <div class="step" id="step2">
+      <h3>2. Available Parking</h3>
+      <div id="availabilityList"></div>
 
-<div class="card">
-<h3>Parking Status</h3>
-<p>Total Spaces: 100</p>
-<p id="availableSpaces">Available: 20</p>
-</div>
+      <button class="full-btn" onclick="nextStep(3)">Continue</button>
+    </div>
 
-<div class="card summary">
-<h3>Reservation Summary</h3>
-<p id="sumVehicle">Vehicle: -</p>
-<p id="sumTime">Time: -</p>
-<p id="sumType">Type: -</p>
-</div>
+    <!-- STEP 3 -->
+    <div class="step" id="step3">
+      <h3>3. Select Contract</h3>
 
-</div>
+      <div class="card" onclick="selectPlan(this,'Hourly - ₹50/hr')">Hourly - ₹50/hr</div>
+      <div class="card" onclick="selectPlan(this,'Daily - ₹300/day')">Daily - ₹300/day</div>
+      <div class="card" onclick="selectPlan(this,'Monthly - ₹5000/month')">Monthly - ₹5000/month</div>
+
+      <button class="full-btn" onclick="goToConfirmation()">Select Contract to Proceed</button>
+    </div>
+
+    <!-- STEP 4 -->
+    <div class="step" id="step4">
+      <h3>4. Confirm Reservation</h3>
+
+      <div id="confirmBox" class="info-box"></div>
+
+      <div class="note-box">
+        This booking will be added to your monthly invoice. No immediate payment is required.
+      </div>
+
+      <button class="full-btn" onclick="confirmBooking()">Confirm Booking</button>
+    </div>
+
+    <!-- STEP 5 -->
+    <div class="step" id="step5">
+      <div class="final-page">
+        <h3>✅ Booking Confirmed</h3>
+        <div id="finalConfirmation" class="confirm-box"></div>
+
+        <div class="final-actions">
+          <button class="full-btn" onclick="goToInvoice()">View Invoice</button>
+          <button class="secondary-btn full-btn" onclick="restartReservation()">Make Another Reservation</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="right" id="summaryPanel">
+    <h3>Summary</h3>
+    <div class="summary">
+      <p id="sCustomer">Customer: -</p>
+      <p id="sDate">Date: -</p>
+      <p id="sTime">Time: -</p>
+      <p id="sType">Vehicle Type: -</p>
+      <p id="sVehicleNumber">Vehicle No: -</p>
+      <p id="sPlan">Plan: -</p>
+    </div>
+  </div>
 
 </div>
 
 <script>
-let availableSpaces = 20;
+let selectedPlan = "";
+let selectedSection = "";
+const savedUser = JSON.parse(localStorage.getItem("parkalotUser"));
 
-function previewBooking(){
-    const v=document.getElementById("vehicles").value;
-    const num=document.getElementById("vehicleNumber").value;
-    const a=document.getElementById("arrival").value;
-    const d=document.getElementById("departure").value;
-    const t=document.getElementById("type").value;
-
-    if(!v||!num||!a||!d||!t){
-        alert("Fill all fields");
-        return;
-    }
-
-    document.getElementById("previewBox").style.display="block";
-    document.getElementById("previewBox").innerHTML=
-    `Preview:<br>
-    Vehicle: ${num}<br>
-    Time: ${a} - ${d}<br>
-    Type: ${t}<br>
-    Slots: ${v}`;
-}
-
-function confirmBooking(){
-    const v=document.getElementById("vehicles").value;
-    const num=document.getElementById("vehicleNumber").value;
-    const a=document.getElementById("arrival").value;
-    const d=document.getElementById("departure").value;
-    const t=document.getElementById("type").value;
-
-    let result=document.getElementById("resultBox");
-
-    if(v<=availableSpaces){
-        result.style.display="block";
-        result.className="result available";
-        result.innerHTML="✅ Parking Available";
-        availableSpaces-=v;
-    }else{
-        result.style.display="block";
-        result.className="result not-available";
-        result.innerHTML="❌ Parking Not Available";
-    }
-
-    document.getElementById("availableSpaces").innerText="Available: "+availableSpaces;
-
-    document.getElementById("sumVehicle").innerText="Vehicle: "+num;
-    document.getElementById("sumTime").innerText="Time: "+a+" - "+d;
-    document.getElementById("sumType").innerText="Type: "+t;
-}
-</script>
-<script>
-const user = localStorage.getItem("parkalotUser");
-
-if (!user) {
+// Protect page
+if (!savedUser || localStorage.getItem("isLoggedIn") !== "true") {
   window.location.href = "login.html";
 }
+
+// Step navigation
+function nextStep(step) {
+  document.querySelectorAll(".step").forEach(s => s.classList.remove("active"));
+  document.getElementById("step" + step).classList.add("active");
+
+  const finalNavbar = document.getElementById("finalNavbar");
+  const summaryPanel = document.getElementById("summaryPanel");
+  const mainHeading = document.getElementById("mainHeading");
+
+  if (step === 5) {
+    finalNavbar.classList.add("active");
+    summaryPanel.style.display = "none";
+    mainHeading.style.display = "none";
+  } else {
+    finalNavbar.classList.remove("active");
+    summaryPanel.style.display = "block";
+    mainHeading.style.display = "block";
+  }
+}
+
+// Update right panel summary
+function updateSummary() {
+  const d = document.getElementById("date").value;
+  const a = document.getElementById("arrival").value;
+  const dep = document.getElementById("departure").value;
+  const t = document.getElementById("vehicleType").value;
+
+  document.getElementById("sCustomer").innerText = "Customer: " + (savedUser?.fullName || "-");
+  document.getElementById("sDate").innerText = "Date: " + (d || "-");
+  document.getElementById("sTime").innerText = "Time: " + ((a && dep) ? a + " - " + dep : "-");
+  document.getElementById("sType").innerText = "Vehicle Type: " + (t || "-");
+  document.getElementById("sVehicleNumber").innerText = "Vehicle No: " + (savedUser?.vehicleNumber || "-");
+  document.getElementById("sPlan").innerText = "Plan: " + (selectedPlan || "-");
+}
+
+// Step 1 → 2
+function showAvailability() {
+  const date = document.getElementById("date").value;
+  const arrival = document.getElementById("arrival").value;
+  const departure = document.getElementById("departure").value;
+  const vehicleType = document.getElementById("vehicleType").value;
+
+  if (!date || !arrival || !departure || !vehicleType) {
+    alert("Please fill all reservation details first.");
+    return;
+  }
+
+  let list = document.getElementById("availabilityList");
+  list.innerHTML = "";
+
+  for (let i = 1; i <= 3; i++) {
+    const spots = Math.floor(Math.random() * 5 + 1);
+    list.innerHTML += `<div class="card" onclick="selectSection(this, 'Section ${i}')">Section ${i} - ${spots} spots available</div>`;
+  }
+
+  updateSummary();
+  nextStep(2);
+}
+
+// Select parking section
+function selectSection(el, section) {
+  document.querySelectorAll("#availabilityList .card").forEach(c => c.classList.remove("selected"));
+  el.classList.add("selected");
+  selectedSection = section;
+}
+
+// Select contract
+function selectPlan(el, plan) {
+  document.querySelectorAll("#step3 .card").forEach(c => c.classList.remove("selected"));
+  el.classList.add("selected");
+  selectedPlan = plan;
+  updateSummary();
+}
+
+// Step 3 → 4
+function goToConfirmation() {
+  if (!selectedSection) {
+    alert("Please select a parking section first.");
+    return;
+  }
+
+  if (!selectedPlan) {
+    alert("Please select a contract first.");
+    return;
+  }
+
+  populateConfirmationBox();
+  updateSummary();
+  nextStep(4);
+}
+
+// Fill step 4 automatically
+function populateConfirmationBox() {
+  const date = document.getElementById("date").value;
+  const arrival = document.getElementById("arrival").value;
+  const departure = document.getElementById("departure").value;
+  const vehicleType = document.getElementById("vehicleType").value;
+
+  document.getElementById("confirmBox").innerHTML = `
+    <strong>Name:</strong> ${savedUser?.fullName || "-"}<br>
+    <strong>Email:</strong> ${savedUser?.email || "-"}<br>
+    <strong>Phone:</strong> ${savedUser?.phone || "-"}<br>
+    <strong>Vehicle Number:</strong> ${savedUser?.vehicleNumber || "-"}<br>
+    <strong>Vehicle Type:</strong> ${vehicleType || "-"}<br>
+    <strong>Date:</strong> ${date || "-"}<br>
+    <strong>Time:</strong> ${(arrival && departure) ? arrival + " - " + departure : "-"}<br>
+    <strong>Parking Section:</strong> ${selectedSection || "-"}<br>
+    <strong>Contract Plan:</strong> ${selectedPlan || "-"}<br>
+    <strong>Billing:</strong> Added to monthly invoice
+  `;
+}
+
+function getPlanCharge(plan) {
+  if (plan.includes("₹50/hr")) return 50;
+  if (plan.includes("₹300/day")) return 300;
+  if (plan.includes("₹5000/month")) return 5000;
+  return 0;
+}
+
+function generateReservationId() {
+  return "RES-" + Date.now();
+}
+
+// Final confirm
+function confirmBooking() {
+  const date = document.getElementById("date").value;
+  const arrival = document.getElementById("arrival").value;
+  const departure = document.getElementById("departure").value;
+  const vehicleType = document.getElementById("vehicleType").value;
+
+  const booking = {
+    reservationId: generateReservationId(),
+    customerName: savedUser?.fullName || "-",
+    email: savedUser?.email || "-",
+    phone: savedUser?.phone || "-",
+    vehicleNumber: savedUser?.vehicleNumber || "-",
+    vehicleType: vehicleType || "-",
+    date: date || "-",
+    arrival: arrival || "-",
+    departure: departure || "-",
+    section: selectedSection || "-",
+    plan: selectedPlan || "-",
+    charge: getPlanCharge(selectedPlan),
+    status: "Pending",
+    month: new Date(date).toLocaleString("default", { month: "long", year: "numeric" })
+  };
+
+  const existingBookings = JSON.parse(localStorage.getItem("parkalotBookings")) || [];
+  existingBookings.push(booking);
+  localStorage.setItem("parkalotBookings", JSON.stringify(existingBookings));
+
+  document.getElementById("finalConfirmation").innerHTML = `
+    <div class="success-title">Your parking has been successfully reserved.</div>
+    <strong>Reservation ID:</strong> ${booking.reservationId}<br>
+    <strong>Name:</strong> ${booking.customerName}<br>
+    <strong>Vehicle Number:</strong> ${booking.vehicleNumber}<br>
+    <strong>Vehicle Type:</strong> ${booking.vehicleType}<br>
+    <strong>Date:</strong> ${booking.date}<br>
+    <strong>Time:</strong> ${booking.arrival} - ${booking.departure}<br>
+    <strong>Parking Section:</strong> ${booking.section}<br>
+    <strong>Contract Plan:</strong> ${booking.plan}<br><br>
+    This booking will be included in your monthly invoice.
+  `;
+
+  nextStep(5);
+}
+
+function goToInvoice() {
+  window.location.href = "invoice.html";
+}
+
+function restartReservation() {
+  selectedPlan = "";
+  selectedSection = "";
+
+  document.getElementById("date").value = "";
+  document.getElementById("arrival").value = "";
+  document.getElementById("departure").value = "";
+  document.getElementById("vehicleType").value = "";
+
+  document.getElementById("availabilityList").innerHTML = "";
+  document.getElementById("confirmBox").innerHTML = "";
+  document.getElementById("finalConfirmation").innerHTML = "";
+
+  document.querySelectorAll(".card").forEach(c => c.classList.remove("selected"));
+
+  updateSummary();
+  nextStep(1);
+}
+
+function logout() {
+  localStorage.removeItem("isLoggedIn");
+  window.location.href = "login.html";
+}
+
+// Load summary on page load
+updateSummary();
 </script>
+
 </body>
 </html>

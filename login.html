@@ -345,143 +345,161 @@
   </div>
 
   <script>
-    function showLogin() {
-      document.getElementById("loginSection").classList.add("active");
-      document.getElementById("registerSection").classList.remove("active");
-      document.getElementById("loginTab").classList.add("active");
-      document.getElementById("registerTab").classList.remove("active");
-    }
+function showLogin() {
+  document.getElementById("loginSection").classList.add("active");
+  document.getElementById("registerSection").classList.remove("active");
+  document.getElementById("loginTab").classList.add("active");
+  document.getElementById("registerTab").classList.remove("active");
+}
 
-    function showRegister() {
-      document.getElementById("registerSection").classList.add("active");
-      document.getElementById("loginSection").classList.remove("active");
-      document.getElementById("registerTab").classList.add("active");
-      document.getElementById("loginTab").classList.remove("active");
-    }
+function showRegister() {
+  document.getElementById("registerSection").classList.add("active");
+  document.getElementById("loginSection").classList.remove("active");
+  document.getElementById("registerTab").classList.add("active");
+  document.getElementById("loginTab").classList.remove("active");
+}
 
-    function increaseVehicles() {
-      const input = document.getElementById("noOfVehicles");
-      let current = parseInt(input.value) || 1;
-      input.value = current + 1;
-    }
+function increaseVehicles() {
+  const input = document.getElementById("noOfVehicles");
+  let current = parseInt(input.value) || 1;
+  input.value = current + 1;
+}
 
-    function decreaseVehicles() {
-      const input = document.getElementById("noOfVehicles");
-      let current = parseInt(input.value) || 1;
-      if (current > 1) {
-        input.value = current - 1;
-      }
-    }
+function decreaseVehicles() {
+  const input = document.getElementById("noOfVehicles");
+  let current = parseInt(input.value) || 1;
+  if (current > 1) {
+    input.value = current - 1;
+  }
+}
 
-    function registerUser() {
-      const fullName = document.getElementById("fullName").value.trim();
-      const email = document.getElementById("email").value.trim();
-      const phone = document.getElementById("phone").value.trim();
-      const vehicleNumber = document.getElementById("vehicleNumber").value.trim();
-      const vehicleType = document.getElementById("vehicleType").value;
-      const date = document.getElementById("date").value;
-      const noOfVehicles = document.getElementById("noOfVehicles").value.trim();
-      const password = document.getElementById("registerPassword").value.trim();
-      const registerMsg = document.getElementById("registerMsg");
+function registerUser() {
+  const fullName = document.getElementById("fullName").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const phone = document.getElementById("phone").value.trim();
+  const vehicleNumber = document.getElementById("vehicleNumber").value.trim();
+  const vehicleType = document.getElementById("vehicleType").value;
+  const date = document.getElementById("date").value;
+  const noOfVehicles = document.getElementById("noOfVehicles").value.trim();
+  const password = document.getElementById("registerPassword").value.trim();
+  const registerMsg = document.getElementById("registerMsg");
 
-      if (!fullName || !email || !phone || !vehicleNumber || !vehicleType || !date || !noOfVehicles || !password) {
-        registerMsg.className = "message error";
-        registerMsg.textContent = "Please fill all registration details.";
-        return;
-      }
+  if (!fullName || !email || !phone || !vehicleNumber || !vehicleType || !date || !noOfVehicles || !password) {
+    registerMsg.className = "message error";
+    registerMsg.textContent = "Please fill all registration details.";
+    return;
+  }
 
-      const userData = {
-        fullName: fullName,
-        email: email,
-        phone: phone,
-        vehicleNumber: vehicleNumber,
-        vehicleType: vehicleType,
-        date: date,
-        noOfVehicles: noOfVehicles,
-        password: password
-      };
+  let users = JSON.parse(localStorage.getItem("parkalotUsers")) || [];
 
-      localStorage.setItem("parkalotUser", JSON.stringify(userData));
+  const existingUser = users.find(user => user.email === email);
+  if (existingUser) {
+    registerMsg.className = "message error";
+    registerMsg.textContent = "An account with this email already exists.";
+    return;
+  }
 
-      registerMsg.className = "message success";
-      registerMsg.textContent = "Registration successful.";
+  const userData = {
+    fullName: fullName,
+    email: email,
+    phone: phone,
+    vehicleNumber: vehicleNumber,
+    vehicleType: vehicleType,
+    date: date,
+    noOfVehicles: noOfVehicles,
+    password: password
+  };
 
-      setTimeout(() => {
-        showLogin();
-      }, 800);
-    }
+  users.push(userData);
+  localStorage.setItem("parkalotUsers", JSON.stringify(users));
 
-    function loginUser() {
-      const loginEmail = document.getElementById("loginEmail").value.trim();
-      const loginPassword = document.getElementById("loginPassword").value.trim();
-      const loginMsg = document.getElementById("loginMsg");
-      const savedUser = JSON.parse(localStorage.getItem("parkalotUser"));
+  registerMsg.className = "message success";
+  registerMsg.textContent = "Registration successful.";
 
-      if (!loginEmail || !loginPassword) {
-        loginMsg.className = "message error";
-        loginMsg.textContent = "Please enter email and password.";
-        return;
-      }
+  setTimeout(() => {
+    showLogin();
+  }, 800);
+}
 
-      if (!savedUser) {
-        loginMsg.className = "message error";
-        loginMsg.textContent = "No registered user found.";
-        return;
-      }
+function loginUser() {
+  const loginEmail = document.getElementById("loginEmail").value.trim();
+  const loginPassword = document.getElementById("loginPassword").value.trim();
+  const loginMsg = document.getElementById("loginMsg");
 
-      if (loginEmail === savedUser.email && loginPassword === savedUser.password) {
-        loginMsg.className = "message success";
-        loginMsg.textContent = "Login successful.";
+  let users = JSON.parse(localStorage.getItem("parkalotUsers")) || [];
 
-        setTimeout(() => {
-          window.location.href = "dashboard.html";
-        }, 1000);
-      } else {
-        loginMsg.className = "message error";
-        loginMsg.textContent = "Invalid email or password.";
-      }
-    }
+  if (!loginEmail || !loginPassword) {
+    loginMsg.className = "message error";
+    loginMsg.textContent = "Please enter email and password.";
+    return;
+  }
 
-    function checkAvailability() {
-      const vehicleNumber = document.getElementById("vehicleNumber").value.trim();
-      const vehicleType = document.getElementById("vehicleType").value;
-      const date = document.getElementById("date").value;
-      const noOfVehiclesValue = document.getElementById("noOfVehicles").value.trim();
-      const resultBox = document.getElementById("resultBox");
-      const placeholderBox = document.getElementById("placeholderBox");
+  if (!users.length) {
+    loginMsg.className = "message error";
+    loginMsg.textContent = "No registered users found.";
+    return;
+  }
 
-      if (!vehicleNumber || !vehicleType || !date || !noOfVehiclesValue) {
-        alert("Please fill required details first.");
-        return;
-      }
+  const matchedUser = users.find(
+    user => user.email === loginEmail && user.password === loginPassword
+  );
 
-      const noOfVehicles = parseInt(noOfVehiclesValue);
+  if (matchedUser) {
+    loginMsg.className = "message success";
+    loginMsg.textContent = "Login successful.";
 
-      if (isNaN(noOfVehicles) || noOfVehicles <= 0) {
-        alert("Enter a valid number of vehicles.");
-        return;
-      }
+    localStorage.setItem("parkalotUser", JSON.stringify(matchedUser));
+    localStorage.setItem("isLoggedIn", "true");
 
-      const availableSlots = 5;
+    setTimeout(() => {
+      window.location.href = "dashboard.html";
+    }, 1000);
+  } else {
+    loginMsg.className = "message error";
+    loginMsg.textContent = "Invalid email or password.";
+  }
+}
 
-      placeholderBox.style.display = "none";
+function checkAvailability() {
+  const vehicleNumber = document.getElementById("vehicleNumber").value.trim();
+  const vehicleType = document.getElementById("vehicleType").value;
+  const date = document.getElementById("date").value;
+  const noOfVehiclesValue = document.getElementById("noOfVehicles").value.trim();
+  const resultBox = document.getElementById("resultBox");
+  const placeholderBox = document.getElementById("placeholderBox");
 
-      if (noOfVehicles <= availableSlots) {
-        resultBox.className = "result-box available";
-        resultBox.innerHTML = `
-          <strong>No. of Vehicles:</strong> ${noOfVehicles}<br>
-          <strong>Date is:</strong> available<br>
-          <strong>Details of Vehicle:</strong> ${vehicleNumber} (${vehicleType})
-        `;
-      } else {
-        resultBox.className = "result-box not-available";
-        resultBox.innerHTML = `
-          <strong>No. of Vehicles:</strong> ${noOfVehicles}<br>
-          <strong>Date is:</strong> not available<br>
-          <strong>Details of Vehicle:</strong> ${vehicleNumber} (${vehicleType})
-        `;
-      }
-    }
-  </script>
+  if (!vehicleNumber || !vehicleType || !date || !noOfVehiclesValue) {
+    alert("Please fill required details first.");
+    return;
+  }
+
+  const noOfVehicles = parseInt(noOfVehiclesValue);
+
+  if (isNaN(noOfVehicles) || noOfVehicles <= 0) {
+    alert("Enter a valid number of vehicles.");
+    return;
+  }
+
+  const availableSlots = 5;
+
+  placeholderBox.style.display = "none";
+
+  if (noOfVehicles <= availableSlots) {
+    resultBox.className = "result-box available";
+    resultBox.innerHTML = `
+      <strong>No. of Vehicles:</strong> ${noOfVehicles}<br>
+      <strong>Date is:</strong> available<br>
+      <strong>Details of Vehicle:</strong> ${vehicleNumber} (${vehicleType})
+    `;
+  } else {
+    resultBox.className = "result-box not-available";
+    resultBox.innerHTML = `
+      <strong>No. of Vehicles:</strong> ${noOfVehicles}<br>
+      <strong>Date is:</strong> not available<br>
+      <strong>Details of Vehicle:</strong> ${vehicleNumber} (${vehicleType})
+    `;
+  }
+}
+</script>
 </body>
 </html>
