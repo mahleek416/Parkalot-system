@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Parkalot Booking</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+
+<div class="flex w-[1100px] bg-gray-200 rounded-2xl p-6 gap-6 shadow-lg">
+
+  <!-- LEFT SIDE -->
+  <div class="flex-1">
+
+    <h1 class="text-3xl font-bold mb-2">
+      Book parking in <span class="text-green-600">London</span>
+    </h1>
+
+    <p class="text-gray-600 mb-6">
+      Choose your parking plan and proceed with payment easily.
+    </p>
+
+    <!-- CARD -->
+    <div class="bg-white p-6 rounded-xl shadow">
+
+      <!-- Contract Info -->
+      <div class="mb-4 text-sm">
+        <p><strong>Name:</strong> Anushka</p>
+        <p><strong>Vehicle:</strong> AB12CD3456</p>
+        <p><strong>Slot:</strong> A12</p>
+      </div>
+
+      <!-- Plan Selection -->
+      <div class="mb-4 space-y-2">
+        <label class="block"><input type="radio" name="plan" value="Daily"> Daily</label>
+        <label class="block"><input type="radio" name="plan" value="Weekly"> Weekly (£20)</label>
+        <label class="block"><input type="radio" name="plan" value="Monthly"> Monthly (£70)</label>
+        <label class="block"><input type="radio" name="plan" value="Yearly"> Yearly (£700)</label>
+      </div>
+
+      <!-- Hours (only for daily) -->
+      <div id="hoursSection" class="mb-4 hidden">
+        <select id="hours" class="w-full border p-2 rounded">
+          <option value="">Select Hours</option>
+          <option value="3">3 Hours</option>
+          <option value="6">6 Hours</option>
+          <option value="9">9 Hours</option>
+          <option value="12">12 Hours</option>
+          <option value="24">24 Hours</option>
+        </select>
+      </div>
+
+      <!-- Price -->
+      <p id="priceDisplay" class="font-semibold mb-4 text-green-700"></p>
+
+      <!-- Terms & Conditions -->
+      <div class="mb-4 text-sm bg-gray-50 p-4 rounded-lg border">
+        <label class="flex items-start gap-2">
+          <input type="checkbox" id="termsCheck" class="mt-1">
+          <span class="text-gray-600">
+            I agree to the 
+            <span class="text-green-600 font-medium">Terms & Conditions</span>.
+            Parking is subject to availability. No refunds after booking confirmation.
+            Vehicles are parked at owner’s risk.
+          </span>
+        </label>
+      </div>
+
+      <!-- Buttons -->
+      <div class="flex gap-3">
+        <button onclick="history.back()"
+          class="flex-1 bg-green-500 text-white p-2 rounded hover:bg-green-600">
+          ← Back
+        </button>
+
+        <button id="proceedBtn"
+          class="flex-1 bg-green-600 text-white p-2 rounded disabled:bg-gray-400"
+          disabled>
+          Proceed to Payment
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- RIGHT SIDE IMAGE -->
+  <div class="w-[450px]">
+    <img 
+      src="london-parking.jpg"
+      class="rounded-xl h-full object-cover"
+      alt="London parking"
+    />
+  </div>
+
+</div>
+
+<script>
+let selectedPlan = null;
+let price = 0;
+
+const button = document.getElementById("proceedBtn");
+const hoursSection = document.getElementById("hoursSection");
+const hoursSelect = document.getElementById("hours");
+const priceDisplay = document.getElementById("priceDisplay");
+const termsCheck = document.getElementById("termsCheck");
+
+// Plan selection
+document.querySelectorAll('input[name="plan"]').forEach(radio => {
+  radio.addEventListener("change", () => {
+    selectedPlan = radio.value;
+
+    if (selectedPlan === "Daily") {
+      hoursSection.classList.remove("hidden");
+      priceDisplay.textContent = "";
+      button.disabled = true;
+    } else {
+      hoursSection.classList.add("hidden");
+
+      if (selectedPlan === "Weekly") price = 20;
+      if (selectedPlan === "Monthly") price = 70;
+      if (selectedPlan === "Yearly") price = 700;
+
+      priceDisplay.textContent = "Total Price: £" + price;
+      button.disabled = !termsCheck.checked;
+    }
+  });
+});
+
+// Hours selection
+hoursSelect.addEventListener("change", () => {
+  const hours = parseInt(hoursSelect.value);
+  if (hours >= 3) {
+    price = (hours / 3) * 5;
+    priceDisplay.textContent = "Total Price: £" + price;
+    button.disabled = !termsCheck.checked;
+  }
+});
+
+// Terms checkbox
+termsCheck.addEventListener("change", () => {
+  if (selectedPlan && (selectedPlan !== "Daily" || hoursSelect.value)) {
+    button.disabled = !termsCheck.checked;
+  }
+});
+
+// Proceed button
+button.addEventListener("click", () => {
+  localStorage.setItem("paymentPlan", selectedPlan);
+  localStorage.setItem("price", price);
+  localStorage.setItem("hours", hoursSelect.value);
+  window.location.href = "payment.html";
+});
+</script>
+
+</body>
+</html>
