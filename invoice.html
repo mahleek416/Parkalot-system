@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Billing & Invoices - PARKALOT</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Inter", Arial, sans-serif;
+}
+
+body {
+    background: #f5f7f6;
+}
+
+/* NAVBAR */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 40px;
+    background: white;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.logo {
+    font-size: 24px;
+    font-weight: bold;
+    color: #2e7d32;
+}
+
+.nav-links {
+    display: flex;
+    gap: 30px;
+    color: #555;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: #555;
+    font-weight: 500;
+}
+
+.logout {
+    background: #2e7d32;
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 25px;
+    cursor: pointer;
+}
+
+/* MAIN LAYOUT */
+.container {
+    display: flex;
+    padding: 30px;
+    gap: 20px;
+}
+
+.main {
+    flex: 3;
+}
+
+.sidebar {
+    flex: 1;
+}
+
+/* CONTROLS */
+.controls {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.controls select,
+.controls input {
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    min-width: 140px;
+}
+
+.download-btn {
+    background: #2e7d32;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+/* CARDS */
+.card {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    margin-bottom: 20px;
+}
+
+.card-title {
+    font-weight: 600;
+    margin-bottom: 15px;
+}
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.stat-box {
+    background: #f1f5f2;
+    padding: 15px;
+    border-radius: 10px;
+}
+
+.stat-box h3 {
+    color: #2e7d32;
+}
+
+/* TABLE */
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+    text-align: left;
+}
+
+th {
+    color: #777;
+    font-size: 14px;
+}
+
+/* BADGES */
+.badge {
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    color: white;
+    display: inline-block;
+}
+
+.green { background: #2e7d32; }
+.orange { background: #ff9800; }
+.grey { background: #9e9e9e; }
+
+/* SIDEBAR */
+.profile {
+    text-align: center;
+}
+
+.profile h3 {
+    margin-bottom: 10px;
+}
+
+.note {
+    margin-top: 20px;
+    font-size: 14px;
+    color: #666;
+    line-height: 1.6;
+}
+
+.action-btn {
+    padding: 6px 10px;
+    border: 1px solid #2e7d32;
+    background: white;
+    color: #2e7d32;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.invoice-details {
+    background: #f8fbf8;
+    border: 1px solid #dfe8df;
+    border-radius: 10px;
+    padding: 15px;
+    line-height: 1.8;
+}
+
+.empty-state {
+    color: #888;
+    padding: 15px 0;
+}
+
+@media(max-width: 900px) {
+    .container {
+        flex-direction: column;
+    }
+
+    .stats {
+        grid-template-columns: repeat(2,1fr);
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="navbar">
+    <div class="logo">PARKALOT</div>
+
+    <div class="nav-links">
+        <a href="dashboard.html">Dashboard</a>
+        <a href="Reservation.html">Reservation</a>
+        <a href="invoice.html">Billing</a>
+    </div>
+
+    <button class="logout" onclick="logout()">Logout</button>
+</div>
+
+<div class="container">
+
+    <div class="main">
+
+        <!-- CONTROLS -->
+        <div class="controls">
+            <select id="vehicleFilter"></select>
+            <select id="monthFilter"></select>
+            <input type="text" id="search" placeholder="Search by vehicle, plan or section...">
+            <button class="download-btn" onclick="downloadInvoice()">Download Invoice</button>
+        </div>
+
+        <!-- CURRENT MONTH -->
+        <div class="card">
+            <div class="card-title">Current Month Charges</div>
+
+            <div class="stats">
+                <div class="stat-box"><h3 id="total">₹0</h3><p>Estimated Total</p></div>
+                <div class="stat-box"><h3 id="unpaid">₹0</h3><p>Unpaid Balance</p></div>
+                <div class="stat-box"><h3 id="bookingsCount">0</h3><p>Bookings</p></div>
+                <div class="stat-box"><h3 id="vehiclesCount">0</h3><p>Vehicles</p></div>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Vehicle</th>
+                        <th>Section</th>
+                        <th>Plan</th>
+                        <th>Charge</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="bookingsTable"></tbody>
+            </table>
+        </div>
+
+        <!-- INVOICES -->
+        <div class="card">
+            <div class="card-title">Generated Invoices</div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Month</th>
+                        <th>ID</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                        <th>Due</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="invoiceTable"></tbody>
+            </table>
+        </div>
+
+        <!-- INVOICE DETAIL -->
+        <div class="card" id="invoiceDetailCard" style="display:none;">
+            <div class="card-title">Invoice Details</div>
+            <div id="invoiceDetailContent" class="invoice-details"></div>
+        </div>
+
+        <!-- VEHICLE SUMMARY -->
+        <div class="card">
+            <div class="card-title">Vehicle Usage Summary</div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Vehicle</th>
+                        <th>Bookings</th>
+                        <th>Total Spent</th>
+                    </tr>
+                </thead>
+                <tbody id="vehicleTable"></tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+
+        <div class="card profile">
+            <h3 id="username">User</h3>
+            <p>Total Vehicles: <span id="totalVehicles">0</span></p>
+            <p>Plan: <span id="activePlan">-</span></p>
+        </div>
+
+        <div class="card note">
+            Reservations are added to the monthly invoice. No immediate payment is required.
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+const user = JSON.parse(localStorage.getItem("parkalotUser")) || {};
+const allStoredBookings = JSON.parse(localStorage.getItem("parkalotBookings")) || [];
+
+if (!user || localStorage.getItem("isLoggedIn") !== "true") {
+    window.location.href = "login.html";
+}
+
+document.getElementById("username").innerText = user.fullName || "User";
+
+/* ONLY CURRENT USER BOOKINGS */
+const allBookings = allStoredBookings.filter(booking => booking.email === user.email);
+
+let filteredBookings = [...allBookings];
+
+function getStatusClass(status) {
+    if (status === "Completed" || status === "Paid") return "green";
+    if (status === "Pending" || status === "Unpaid") return "orange";
+    return "grey";
+}
+
+function getActivePlan() {
+    if (!allBookings.length) return "-";
+    return allBookings[allBookings.length - 1].plan || "-";
+}
+
+function populateFilters() {
+    const vehicleFilter = document.getElementById("vehicleFilter");
+    const monthFilter = document.getElementById("monthFilter");
+
+    const uniqueVehicles = [...new Set(allBookings.map(b => b.vehicleNumber).filter(Boolean))];
+    const uniqueMonths = [...new Set(allBookings.map(b => b.month).filter(Boolean))];
+
+    vehicleFilter.innerHTML = `<option value="all">All Vehicles</option>`;
+    uniqueVehicles.forEach(vehicle => {
+        vehicleFilter.innerHTML += `<option value="${vehicle}">${vehicle}</option>`;
+    });
+
+    monthFilter.innerHTML = `<option value="all">All Months</option>`;
+    uniqueMonths.forEach(month => {
+        monthFilter.innerHTML += `<option value="${month}">${month}</option>`;
+    });
+}
+
+function applyFilters() {
+    const selectedVehicle = document.getElementById("vehicleFilter").value;
+    const selectedMonth = document.getElementById("monthFilter").value;
+    const searchTerm = document.getElementById("search").value.toLowerCase().trim();
+
+    filteredBookings = allBookings.filter(b => {
+        const vehicleMatch = selectedVehicle === "all" || b.vehicleNumber === selectedVehicle;
+        const monthMatch = selectedMonth === "all" || b.month === selectedMonth;
+        const searchMatch =
+            (b.vehicleNumber || "").toLowerCase().includes(searchTerm) ||
+            (b.plan || "").toLowerCase().includes(searchTerm) ||
+            (b.section || "").toLowerCase().includes(searchTerm) ||
+            (b.reservationId || "").toLowerCase().includes(searchTerm);
+
+        return vehicleMatch && monthMatch && searchMatch;
+    });
+
+    renderBookings();
+    renderInvoices();
+    renderVehicleSummary();
+    updateSidebar();
+}
+
+function renderBookings() {
+    const table = document.getElementById("bookingsTable");
+    table.innerHTML = "";
+
+    let total = 0;
+    let uniqueVehicles = new Set();
+
+    if (!filteredBookings.length) {
+        table.innerHTML = `<tr><td colspan="6" class="empty-state">No bookings found.</td></tr>`;
+    } else {
+        filteredBookings.forEach(b => {
+            total += Number(b.charge || 0);
+            uniqueVehicles.add(b.vehicleNumber);
+
+            table.innerHTML += `
+            <tr>
+                <td>${b.date}</td>
+                <td>${b.vehicleNumber}</td>
+                <td>${b.section}</td>
+                <td>${b.plan}</td>
+                <td>₹${b.charge}</td>
+                <td><span class="badge ${getStatusClass(b.status)}">${b.status}</span></td>
+            </tr>`;
+        });
+    }
+
+    const unpaid = filteredBookings
+        .filter(b => b.status !== "Paid" && b.status !== "Completed")
+        .reduce((sum, b) => sum + Number(b.charge || 0), 0);
+
+    document.getElementById("total").innerText = "₹" + total;
+    document.getElementById("unpaid").innerText = "₹" + unpaid;
+    document.getElementById("bookingsCount").innerText = filteredBookings.length;
+    document.getElementById("vehiclesCount").innerText = uniqueVehicles.size;
+}
+
+function generateInvoicesFromBookings() {
+    const grouped = {};
+
+    allBookings.forEach(booking => {
+        const month = booking.month || "Unknown Month";
+        if (!grouped[month]) {
+            grouped[month] = {
+                month: month,
+                id: "INV-" + month.replace(/\s/g, "-").toUpperCase(),
+                total: 0,
+                status: "Unpaid",
+                due: "5th of next month",
+                bookings: []
+            };
+        }
+
+        grouped[month].total += Number(booking.charge || 0);
+        grouped[month].bookings.push(booking);
+    });
+
+    return Object.values(grouped);
+}
+
+function renderInvoices() {
+    const invoiceTable = document.getElementById("invoiceTable");
+    invoiceTable.innerHTML = "";
+
+    const invoices = generateInvoicesFromBookings();
+
+    if (!invoices.length) {
+        invoiceTable.innerHTML = `<tr><td colspan="6" class="empty-state">No invoices generated yet.</td></tr>`;
+        return;
+    }
+
+    invoices.forEach(invoice => {
+        invoiceTable.innerHTML += `
+        <tr>
+            <td>${invoice.month}</td>
+            <td>${invoice.id}</td>
+            <td>₹${invoice.total}</td>
+            <td><span class="badge ${getStatusClass(invoice.status)}">${invoice.status}</span></td>
+            <td>${invoice.due}</td>
+            <td><button class="action-btn" onclick="viewInvoice('${invoice.month}')">View</button></td>
+        </tr>`;
+    });
+}
+
+function viewInvoice(month) {
+    const invoices = generateInvoicesFromBookings();
+    const invoice = invoices.find(i => i.month === month);
+
+    if (!invoice) return;
+
+    const detailCard = document.getElementById("invoiceDetailCard");
+    const detailContent = document.getElementById("invoiceDetailContent");
+
+    let bookingsHtml = "";
+    invoice.bookings.forEach(b => {
+        bookingsHtml += `
+        <div style="margin-bottom:10px;">
+            <strong>Reservation ID:</strong> ${b.reservationId || "-"}<br>
+            <strong>Date:</strong> ${b.date}<br>
+            <strong>Vehicle:</strong> ${b.vehicleNumber}<br>
+            <strong>Section:</strong> ${b.section}<br>
+            <strong>Plan:</strong> ${b.plan}<br>
+            <strong>Charge:</strong> ₹${b.charge}<br>
+            <strong>Status:</strong> ${b.status}
+        </div>
+        <hr style="margin:10px 0;border:none;border-top:1px solid #ddd;">
+        `;
+    });
+
+    detailContent.innerHTML = `
+        <strong>Invoice Month:</strong> ${invoice.month}<br>
+        <strong>Invoice ID:</strong> ${invoice.id}<br>
+        <strong>Total:</strong> ₹${invoice.total}<br>
+        <strong>Status:</strong> ${invoice.status}<br><br>
+        <strong>Included Bookings:</strong><br><br>
+        ${bookingsHtml}
+    `;
+
+    detailCard.style.display = "block";
+    detailCard.scrollIntoView({ behavior: "smooth" });
+}
+
+function renderVehicleSummary() {
+    const vehicleTable = document.getElementById("vehicleTable");
+    vehicleTable.innerHTML = "";
+
+    const groupedVehicles = {};
+
+    filteredBookings.forEach(b => {
+        if (!groupedVehicles[b.vehicleNumber]) {
+            groupedVehicles[b.vehicleNumber] = {
+                bookings: 0,
+                total: 0
+            };
+        }
+
+        groupedVehicles[b.vehicleNumber].bookings += 1;
+        groupedVehicles[b.vehicleNumber].total += Number(b.charge || 0);
+    });
+
+    const vehicleKeys = Object.keys(groupedVehicles);
+
+    if (!vehicleKeys.length) {
+        vehicleTable.innerHTML = `<tr><td colspan="3" class="empty-state">No vehicle usage found.</td></tr>`;
+        document.getElementById("totalVehicles").innerText = 0;
+        return;
+    }
+
+    vehicleKeys.forEach(vehicle => {
+        vehicleTable.innerHTML += `
+        <tr>
+            <td>${vehicle}</td>
+            <td>${groupedVehicles[vehicle].bookings}</td>
+            <td>₹${groupedVehicles[vehicle].total}</td>
+        </tr>`;
+    });
+
+    document.getElementById("totalVehicles").innerText = vehicleKeys.length;
+}
+
+function updateSidebar() {
+    document.getElementById("activePlan").innerText = getActivePlan();
+}
+
+function downloadInvoice() {
+    window.print();
+}
+
+function logout() {
+    localStorage.removeItem("isLoggedIn");
+    window.location.href = "login.html";
+}
+
+document.getElementById("vehicleFilter").addEventListener("change", applyFilters);
+document.getElementById("monthFilter").addEventListener("change", applyFilters);
+document.getElementById("search").addEventListener("input", applyFilters);
+
+populateFilters();
+applyFilters();
+</script>
+
+</body>
+</html>
