@@ -448,15 +448,14 @@ function generateReservationId() {
   return "RES-" + Date.now();
 }
 
-// Final confirm
+
 function confirmBooking() {
   const date = document.getElementById("date").value;
   const arrival = document.getElementById("arrival").value;
   const departure = document.getElementById("departure").value;
   const vehicleType = document.getElementById("vehicleType").value;
 
-  const booking = {
-    reservationId: generateReservationId(),
+  const reservationData = {
     customerName: savedUser?.fullName || "-",
     email: savedUser?.email || "-",
     phone: savedUser?.phone || "-",
@@ -472,24 +471,40 @@ function confirmBooking() {
     month: new Date(date).toLocaleString("default", { month: "long", year: "numeric" })
   };
 
-  const existingBookings = JSON.parse(localStorage.getItem("parkalotBookings")) || [];
-  existingBookings.push(booking);
-  localStorage.setItem("parkalotBookings", JSON.stringify(existingBookings));
+  fetch("http://localhost:8080/api/reservations", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(reservationData)
+  })
+    .then(async res => {
+      const text = await res.text();
+      if (!res.ok) {
+        throw new Error(text || "Reservation failed");
+      }
+      return text ? JSON.parse(text) : {};
+    })
+    .then(data => {
+      document.getElementById("finalConfirmation").innerHTML = `
+        <div class="success-title">Your parking has been successfully reserved.</div>
+        <strong>Reservation ID:</strong> ${data.reservationId || "-"}<br>
+        <strong>Name:</strong> ${data.customerName || "-"}<br>
+        <strong>Vehicle Number:</strong> ${data.vehicleNumber || "-"}<br>
+        <strong>Vehicle Type:</strong> ${data.vehicleType || "-"}<br>
+        <strong>Date:</strong> ${data.date || "-"}<br>
+        <strong>Time:</strong> ${data.arrival || "-"} - ${data.departure || "-"}<br>
+        <strong>Parking Section:</strong> ${data.section || "-"}<br>
+        <strong>Contract Plan:</strong> ${data.plan || "-"}<br><br>
+        This booking will be included in your monthly invoice.
+      `;
 
-  document.getElementById("finalConfirmation").innerHTML = `
-    <div class="success-title">Your parking has been successfully reserved.</div>
-    <strong>Reservation ID:</strong> ${booking.reservationId}<br>
-    <strong>Name:</strong> ${booking.customerName}<br>
-    <strong>Vehicle Number:</strong> ${booking.vehicleNumber}<br>
-    <strong>Vehicle Type:</strong> ${booking.vehicleType}<br>
-    <strong>Date:</strong> ${booking.date}<br>
-    <strong>Time:</strong> ${booking.arrival} - ${booking.departure}<br>
-    <strong>Parking Section:</strong> ${booking.section}<br>
-    <strong>Contract Plan:</strong> ${booking.plan}<br><br>
-    This booking will be included in your monthly invoice.
-  `;
-
-  nextStep(5);
+      nextStep(5);
+    })
+    .catch(err => {
+      alert("Error saving reservation: " + err.message);
+      console.error(err);
+    });
 }
 
 function goToInvoice() {

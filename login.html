@@ -390,35 +390,43 @@ function registerUser() {
     return;
   }
 
-  let users = JSON.parse(localStorage.getItem("parkalotUsers")) || [];
+  fetch("http://localhost:8080/api/auth/register", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      fullName: fullName,
+      email: email,
+      phone: phone,
+      vehicleNumber: vehicleNumber,
+      vehicleType: vehicleType,
+      noOfVehicles: parseInt(noOfVehicles),
+      password: password
+    })
+  })
+  .then(async res => {
+    const text = await res.text();
 
-  const existingUser = users.find(user => user.email === email);
-  if (existingUser) {
+    if (!res.ok) {
+      throw new Error(text || "Registration failed");
+    }
+
+    return text ? JSON.parse(text) : {};
+  })
+  .then(data => {
+    registerMsg.className = "message success";
+    registerMsg.textContent = "Registration successful.";
+
+    setTimeout(() => {
+      showLogin();
+    }, 800);
+  })
+  .catch(err => {
     registerMsg.className = "message error";
-    registerMsg.textContent = "An account with this email already exists.";
-    return;
-  }
-
-  const userData = {
-    fullName: fullName,
-    email: email,
-    phone: phone,
-    vehicleNumber: vehicleNumber,
-    vehicleType: vehicleType,
-    date: date,
-    noOfVehicles: noOfVehicles,
-    password: password
-  };
-
-  users.push(userData);
-  localStorage.setItem("parkalotUsers", JSON.stringify(users));
-
-  registerMsg.className = "message success";
-  registerMsg.textContent = "Registration successful.";
-
-  setTimeout(() => {
-    showLogin();
-  }, 800);
+    registerMsg.textContent = err.message;
+    console.error("Register error:", err);
+  });
 }
 
 function loginUser() {
@@ -426,38 +434,41 @@ function loginUser() {
   const loginPassword = document.getElementById("loginPassword").value.trim();
   const loginMsg = document.getElementById("loginMsg");
 
-  let users = JSON.parse(localStorage.getItem("parkalotUsers")) || [];
-
   if (!loginEmail || !loginPassword) {
     loginMsg.className = "message error";
     loginMsg.textContent = "Please enter email and password.";
     return;
   }
 
-  if (!users.length) {
-    loginMsg.className = "message error";
-    loginMsg.textContent = "No registered users found.";
-    return;
-  }
-
-  const matchedUser = users.find(
-    user => user.email === loginEmail && user.password === loginPassword
-  );
-
-  if (matchedUser) {
+  fetch("http://localhost:8080/api/auth/login", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      email: loginEmail,
+      password: loginPassword
+    })
+  })
+  .then(res => {
+    if (!res.ok) throw new Error("Invalid login");
+    return res.json();
+  })
+  .then(data => {
     loginMsg.className = "message success";
     loginMsg.textContent = "Login successful.";
 
-    localStorage.setItem("parkalotUser", JSON.stringify(matchedUser));
+    localStorage.setItem("parkalotUser", JSON.stringify(data));
     localStorage.setItem("isLoggedIn", "true");
 
     setTimeout(() => {
       window.location.href = "dashboard.html";
     }, 1000);
-  } else {
+  })
+  .catch(err => {
     loginMsg.className = "message error";
     loginMsg.textContent = "Invalid email or password.";
-  }
+  });
 }
 
 function checkAvailability() {

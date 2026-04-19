@@ -193,6 +193,16 @@ th {
     padding: 15px 0;
 }
 
+.error-box {
+    background: #fff4e5;
+    color: #8a5a00;
+    border: 1px solid #f3d19c;
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 20px;
+    display: none;
+}
+
 @media(max-width: 900px) {
     .container {
         flex-direction: column;
@@ -222,6 +232,8 @@ th {
 <div class="container">
 
     <div class="main">
+
+        <div id="errorBox" class="error-box"></div>
 
         <!-- CONTROLS -->
         <div class="controls">
@@ -253,7 +265,9 @@ th {
                         <th>Status</th>
                     </tr>
                 </thead>
-                <tbody id="bookingsTable"></tbody>
+                <tbody id="bookingsTable">
+                    <tr><td colspan="6" class="empty-state">No bookings found.</td></tr>
+                </tbody>
             </table>
         </div>
 
@@ -272,7 +286,9 @@ th {
                         <th>Action</th>
                     </tr>
                 </thead>
-                <tbody id="invoiceTable"></tbody>
+                <tbody id="invoiceTable">
+                    <tr><td colspan="6" class="empty-state">No invoices generated yet.</td></tr>
+                </tbody>
             </table>
         </div>
 
@@ -294,7 +310,9 @@ th {
                         <th>Total Spent</th>
                     </tr>
                 </thead>
-                <tbody id="vehicleTable"></tbody>
+                <tbody id="vehicleTable">
+                    <tr><td colspan="3" class="empty-state">No vehicle usage found.</td></tr>
+                </tbody>
             </table>
         </div>
 
@@ -305,6 +323,7 @@ th {
 
         <div class="card profile">
             <h3 id="username">User</h3>
+            <p>Email: <span id="userEmailText">-</span></p>
             <p>Total Vehicles: <span id="totalVehicles">0</span></p>
             <p>Plan: <span id="activePlan">-</span></p>
         </div>
@@ -319,21 +338,33 @@ th {
 
 <script>
 const user = JSON.parse(localStorage.getItem("parkalotUser")) || {};
-const allStoredBookings = JSON.parse(localStorage.getItem("parkalotBookings")) || [];
+const isLoggedIn = localStorage.getItem("isLoggedIn");
 
-if (!user || localStorage.getItem("isLoggedIn") !== "true") {
+let allBookings = [];
+let allInvoices = [];
+let filteredBookings = [];
+
+if (!user || !user.email || isLoggedIn !== "true") {
     window.location.href = "login.html";
 }
 
 document.getElementById("username").innerText = user.fullName || "User";
+document.getElementById("userEmailText").innerText = user.email || "-";
 
-/* ONLY CURRENT USER BOOKINGS */
-const allBookings = allStoredBookings.filter(booking => booking.email === user.email);
+function showError(message) {
+    const errorBox = document.getElementById("errorBox");
+    errorBox.style.display = "block";
+    errorBox.innerText = message;
+}
 
-let filteredBookings = [...allBookings];
+function hideError() {
+    const errorBox = document.getElementById("errorBox");
+    errorBox.style.display = "none";
+    errorBox.innerText = "";
+}
 
 function getStatusClass(status) {
-    if (status === "Completed" || status === "Paid") return "green";
+    if (status === "Completed" || status === "Paid" || status === "Confirmed") return "green";
     if (status === "Pending" || status === "Unpaid") return "orange";
     return "grey";
 }
@@ -373,7 +404,7 @@ function applyFilters() {
             (b.vehicleNumber || "").toLowerCase().includes(searchTerm) ||
             (b.plan || "").toLowerCase().includes(searchTerm) ||
             (b.section || "").toLowerCase().includes(searchTerm) ||
-            (b.reservationId || "").toLowerCase().includes(searchTerm);
+            String(b.reservationId || "").toLowerCase().includes(searchTerm);
 
         return vehicleMatch && monthMatch && searchMatch;
     });
@@ -396,16 +427,16 @@ function renderBookings() {
     } else {
         filteredBookings.forEach(b => {
             total += Number(b.charge || 0);
-            uniqueVehicles.add(b.vehicleNumber);
+            if (b.vehicleNumber) uniqueVehicles.add(b.vehicleNumber);
 
             table.innerHTML += `
             <tr>
-                <td>${b.date}</td>
-                <td>${b.vehicleNumber}</td>
-                <td>${b.section}</td>
-                <td>${b.plan}</td>
-                <td>₹${b.charge}</td>
-                <td><span class="badge ${getStatusClass(b.status)}">${b.status}</span></td>
+                <td>${b.date || "-"}</td>
+                <td>${b.vehicleNumber || "-"}</td>
+                <td>${b.section || "-"}</td>
+                <td>${b.plan || "-"}</td>
+                <td>₹${Number(b.charge || 0)}</td>
+                <td><span class="badge ${getStatusClass(b.status)}">${b.status || "Pending"}</span></td>
             </tr>`;
         });
     }
@@ -420,83 +451,64 @@ function renderBookings() {
     document.getElementById("vehiclesCount").innerText = uniqueVehicles.size;
 }
 
-function generateInvoicesFromBookings() {
-    const grouped = {};
-
-    allBookings.forEach(booking => {
-        const month = booking.month || "Unknown Month";
-        if (!grouped[month]) {
-            grouped[month] = {
-                month: month,
-                id: "INV-" + month.replace(/\s/g, "-").toUpperCase(),
-                total: 0,
-                status: "Unpaid",
-                due: "5th of next month",
-                bookings: []
-            };
-        }
-
-        grouped[month].total += Number(booking.charge || 0);
-        grouped[month].bookings.push(booking);
-    });
-
-    return Object.values(grouped);
-}
-
 function renderInvoices() {
     const invoiceTable = document.getElementById("invoiceTable");
     invoiceTable.innerHTML = "";
 
-    const invoices = generateInvoicesFromBookings();
-
-    if (!invoices.length) {
+    if (!allInvoices.length) {
         invoiceTable.innerHTML = `<tr><td colspan="6" class="empty-state">No invoices generated yet.</td></tr>`;
         return;
     }
 
-    invoices.forEach(invoice => {
+    allInvoices.forEach(invoice => {
         invoiceTable.innerHTML += `
         <tr>
-            <td>${invoice.month}</td>
-            <td>${invoice.id}</td>
-            <td>₹${invoice.total}</td>
-            <td><span class="badge ${getStatusClass(invoice.status)}">${invoice.status}</span></td>
-            <td>${invoice.due}</td>
-            <td><button class="action-btn" onclick="viewInvoice('${invoice.month}')">View</button></td>
+            <td>${invoice.billingMonth || "-"}</td>
+            <td>${invoice.invoiceId || "-"}</td>
+            <td>₹${Number(invoice.totalAmount || 0)}</td>
+            <td><span class="badge ${getStatusClass(invoice.status)}">${invoice.status || "Pending"}</span></td>
+            <td>End of Month</td>
+            <td><button class="action-btn" onclick="viewInvoice(${invoice.invoiceId})">View</button></td>
         </tr>`;
     });
 }
 
-function viewInvoice(month) {
-    const invoices = generateInvoicesFromBookings();
-    const invoice = invoices.find(i => i.month === month);
+function viewInvoice(invoiceId) {
+    const invoice = allInvoices.find(i => i.invoiceId === invoiceId);
 
     if (!invoice) return;
 
     const detailCard = document.getElementById("invoiceDetailCard");
     const detailContent = document.getElementById("invoiceDetailContent");
 
+    const matchingBookings = allBookings.filter(b => b.month === invoice.billingMonth);
+
     let bookingsHtml = "";
-    invoice.bookings.forEach(b => {
-        bookingsHtml += `
-        <div style="margin-bottom:10px;">
-            <strong>Reservation ID:</strong> ${b.reservationId || "-"}<br>
-            <strong>Date:</strong> ${b.date}<br>
-            <strong>Vehicle:</strong> ${b.vehicleNumber}<br>
-            <strong>Section:</strong> ${b.section}<br>
-            <strong>Plan:</strong> ${b.plan}<br>
-            <strong>Charge:</strong> ₹${b.charge}<br>
-            <strong>Status:</strong> ${b.status}
-        </div>
-        <hr style="margin:10px 0;border:none;border-top:1px solid #ddd;">
-        `;
-    });
+
+    if (matchingBookings.length === 0) {
+        bookingsHtml = `<p>No reservation details found for this invoice month.</p>`;
+    } else {
+        matchingBookings.forEach(b => {
+            bookingsHtml += `
+            <div style="margin-bottom:10px;">
+                <strong>Reservation ID:</strong> ${b.reservationId || "-"}<br>
+                <strong>Date:</strong> ${b.date || "-"}<br>
+                <strong>Vehicle:</strong> ${b.vehicleNumber || "-"}<br>
+                <strong>Section:</strong> ${b.section || "-"}<br>
+                <strong>Plan:</strong> ${b.plan || "-"}<br>
+                <strong>Charge:</strong> ₹${Number(b.charge || 0)}<br>
+                <strong>Status:</strong> ${b.status || "Pending"}
+            </div>
+            <hr style="margin:10px 0;border:none;border-top:1px solid #ddd;">`;
+        });
+    }
 
     detailContent.innerHTML = `
-        <strong>Invoice Month:</strong> ${invoice.month}<br>
-        <strong>Invoice ID:</strong> ${invoice.id}<br>
-        <strong>Total:</strong> ₹${invoice.total}<br>
-        <strong>Status:</strong> ${invoice.status}<br><br>
+        <strong>Invoice Month:</strong> ${invoice.billingMonth || "-"}<br>
+        <strong>Invoice ID:</strong> ${invoice.invoiceId || "-"}<br>
+        <strong>Email:</strong> ${invoice.email || "-"}<br>
+        <strong>Total:</strong> ₹${Number(invoice.totalAmount || 0)}<br>
+        <strong>Status:</strong> ${invoice.status || "Pending"}<br><br>
         <strong>Included Bookings:</strong><br><br>
         ${bookingsHtml}
     `;
@@ -512,15 +524,16 @@ function renderVehicleSummary() {
     const groupedVehicles = {};
 
     filteredBookings.forEach(b => {
-        if (!groupedVehicles[b.vehicleNumber]) {
-            groupedVehicles[b.vehicleNumber] = {
+        const vehicle = b.vehicleNumber || "Unknown";
+        if (!groupedVehicles[vehicle]) {
+            groupedVehicles[vehicle] = {
                 bookings: 0,
                 total: 0
             };
         }
 
-        groupedVehicles[b.vehicleNumber].bookings += 1;
-        groupedVehicles[b.vehicleNumber].total += Number(b.charge || 0);
+        groupedVehicles[vehicle].bookings += 1;
+        groupedVehicles[vehicle].total += Number(b.charge || 0);
     });
 
     const vehicleKeys = Object.keys(groupedVehicles);
@@ -553,15 +566,54 @@ function downloadInvoice() {
 
 function logout() {
     localStorage.removeItem("isLoggedIn");
+    localStorage.removeItem("parkalotUser");
     window.location.href = "login.html";
+}
+
+async function loadInvoiceData() {
+    hideError();
+
+    try {
+        // Generate or update invoice for current user
+        await fetch(`http://localhost:8080/api/invoices/generate/${encodeURIComponent(user.email)}`, {
+            method: "POST"
+        });
+
+        // Get reservations for current user
+        const reservationsResponse = await fetch(`http://localhost:8080/api/reservations/customer/${encodeURIComponent(user.email)}`);
+        if (!reservationsResponse.ok) {
+            throw new Error("Could not load reservations from backend.");
+        }
+        allBookings = await reservationsResponse.json();
+
+        // Get invoices for current user
+        const invoicesResponse = await fetch(`http://localhost:8080/api/invoices/customer/${encodeURIComponent(user.email)}`);
+        if (!invoicesResponse.ok) {
+            throw new Error("Could not load invoices from backend.");
+        }
+        allInvoices = await invoicesResponse.json();
+
+        filteredBookings = [...allBookings];
+
+        populateFilters();
+        applyFilters();
+
+    } catch (error) {
+        console.error("Invoice page error:", error);
+        showError("Invoice page could not load live backend data. Check your Spring Boot server and API routes.");
+        allBookings = [];
+        allInvoices = [];
+        filteredBookings = [];
+        populateFilters();
+        applyFilters();
+    }
 }
 
 document.getElementById("vehicleFilter").addEventListener("change", applyFilters);
 document.getElementById("monthFilter").addEventListener("change", applyFilters);
 document.getElementById("search").addEventListener("input", applyFilters);
 
-populateFilters();
-applyFilters();
+loadInvoiceData();
 </script>
 
 </body>
